@@ -1,4 +1,3 @@
-struct TJRegex {
 
-    var text = "Hello, World!"
+struct TJRegex {
 }
