@@ -8,6 +8,7 @@
 import Foundation
 
 func TJRegexParse(_ pattern: String) throws {
-    //let tokens = try TJRegexTokenize(pattern)
-    //let ast = try TJRegexCreateAST(tokens)
+    let infixTokens = try TJRegexTokenize(pattern)
+    let postfixTokens = try TJInfixToPostfix(infixTokens)
+    let ast = try TJPostfixToAST(postfixTokens)
 }

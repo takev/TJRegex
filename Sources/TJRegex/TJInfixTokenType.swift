@@ -9,7 +9,7 @@ import Foundation
 
 enum TJInfixTokenType: Equatable {
     case Operand
-    case Operator(Int)
+    case Operator(Int)  // Argument: Presedence 
     case LeftBracket
     case RightBracket
 }
