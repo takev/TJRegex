@@ -65,7 +65,7 @@ func TJRegexTokenizeCharacterGroup(_ pattern: String, index: inout String.Index,
                 } else {
                     // Found end of character group.
                     index = nextIndex
-                    return .CG(characterRanges, inverse:inverse)
+                    return .CG(characterRanges, inverse)
                 }
 
             case "-":
@@ -90,6 +90,65 @@ func TJRegexTokenizeCharacterGroup(_ pattern: String, index: inout String.Index,
         index = nextIndex
     }
     throw TJRegexParseError.UnfinishedCharacterGroup
+}
+
+/// Example
+/// "x[a-cM-Z]x"
+/// "x([a-c]|[M-Z])x"
+func TJTokenizeCharacterGroup(_ characterRanges: [ClosedRange<Character>]) -> [TJRegexToken] {
+    var tokens: [TJRegexToken] = []
+
+    if characterRanges.count > 1 {
+        tokens.append(.SG(-1))
+    }
+
+    for characterRange in characterRanges {
+        tokens.append(.CG(TJCharacterRange(characterRange)))
+        tokens.append(.O)
+    }
+
+    if characterRanges.count > 1 {
+        tokens.removeLast()    // Remove last .O token.
+        tokens.append(.EG)
+    }
+
+    return tokens
+}
+
+/// Example
+/// "x[^a-cM-Z]x"
+/// "x([a-c]|[M-Z])x"
+func TJTokenizeCharacterNegativeGroup(_ characterRanges: [ClosedRange<Character>]) -> [TJRegexToken] {
+    var existingRanges = [TJCharacterRange()]
+
+    for characterRange in characterRanges {
+        for i in 0 ..< existingRanges.count {
+            let existingRange = existingRanges[i]
+
+            let newRanges = existingRange.subtract(characterRange)
+            existingRanges.replaceSubrange(i ..< i, with: newRanges)
+        }
+    }
+
+    return []
+}
+
+func TJTokenizeCharacterGroup(_ characters: [Character]) -> [TJRegexToken] {
+    let characterRanges = characters.map { $0 ... $0 }
+    return TJTokenizeCharacterGroup(characterRanges)
+}
+
+func TJTokenizeCharacterGroup(_ characters: [Character], _ characterRanges: [ClosedRange<Character>]) -> [TJRegexToken] {
+    let tmp = characters.map { $0 ... $0 }
+    return TJTokenizeCharacterGroup([], tmp + characterRanges)
+}
+
+func TJTokenizeCharacterNegativeGroup(_ characters: [Character]) -> [TJRegexToken] {
+    return TJTokenizeCharacterNegativeGroup(characters, [])
+}
+
+func TJTokenizeCharacterNegativeGroup(_ characterRanges: [ClosedRange<Character>]) -> [TJRegexToken] {
+    return TJTokenizeCharacterNegativeGroup([], characterRanges)
 }
 
 func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
@@ -121,7 +180,7 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
         }
 
         switch (c) {
-            case ".":   tokens.append(.CG([], inverse:true))
+            case ".":   tokens.append(.CG(TJCharacterRange()))
             case "^":   throw TJRegexParseError.UnsupportedAchor
             case "$":   throw TJRegexParseError.UnsupportedAchor
             case "(":   tokens.append(.SG(groupNumber)); groupNumber += 1
@@ -135,9 +194,9 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
             case "[":
                 if nextIndex < pattern.endIndex && pattern[nextIndex] == "^" {
                     nextIndex = pattern.index(nextIndex, offsetBy:1)
-                    tokens.append(try TJRegexTokenizeCharacterGroup(pattern, index:&nextIndex, inverse:true))
+                    tokens.append(try TJRegexTokenizeCharacterGroup(pattern, index:&nextIndex, inverse: true))
                 } else {
-                    tokens.append(try TJRegexTokenizeCharacterGroup(pattern, index:&nextIndex, inverse:false))
+                    tokens.append(try TJRegexTokenizeCharacterGroup(pattern, index:&nextIndex, inverse: false))
                 }
 
             case "\\":
@@ -147,14 +206,20 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
 
                 let nextCharacter = pattern[nextIndex]
                 switch (nextCharacter) {
-                    case "w":   tokens.append(.CG(["_" ... "_", "a" ... "z", "A" ... "Z", "0" ... "9"], inverse: false))
-                    case "W":   tokens.append(.CG(["_" ... "_", "a" ... "z", "A" ... "Z", "0" ... "9"], inverse: true))
-                    case "s":   tokens.append(.CG([" " ... " ", "\t" ... "\t", "\r" ... "\r", "\n" ... "\n", "\u{c}" ... "\u{c}"], inverse: false))
-                    case "S":   tokens.append(.CG([" " ... " ", "\t" ... "\t", "\r" ... "\r", "\n" ... "\n", "\u{c}" ... "\u{c}"], inverse: true))
-                    case "d":   tokens.append(.CG(["0" ... "9"], inverse: false))
-                    case "D":   tokens.append(.CG(["0" ... "9"], inverse: true))
+                    case "w":
+                        tokens += TJTokenizeCharacterGroup(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"])
+                    case "W":
+                        tokens += TJTokenizeCharacterNegativeGroup(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"])
+                    case "s":
+                        tokens += TJTokenizeCharacterGroup([" ", "\t", "\r", "\n", "\u{c}"])
+                    case "S":
+                        tokens += TJTokenizeCharacterNegativeGroup([" ", "\t", "\r", "\n", "\u{c}"])
+                    case "d":
+                        tokens += TJTokenizeCharacterGroup(["0" ... "9"])
+                    case "D":
+                        tokens += TJTokenizeCharacterNegativeGroup(["0" ... "9"])
                     case ".", "^", "$", "(", ")", "|", "?", "*", "+", "{", "}", "[", "]", "\\":
-                        tokens.append(.C(nextCharacter))
+                        tokens.append(.C(TJCharacterRange(nextCharacter)))
 
                     default:
                         throw TJRegexParseError.BadCharacterInEscape(nextIndex, nextCharacter)

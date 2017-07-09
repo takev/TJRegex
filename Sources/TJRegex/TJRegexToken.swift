@@ -17,16 +17,12 @@
  * - J  = Join / Concatenation
  */
 enum TJRegexToken: Equatable, TJInfixToken, TJPostfixToken {
-    case CG([ClosedRange<Character>], inverse: Bool)
+    case CG(TJCharacterRange)
     case R(Int, Int?)
     case SG(Int)
     case EG
     case O
     case J
-
-    static func C(_ character: Character) -> TJRegexToken {
-        return CG([character ... character], inverse: false)
-    }
 
     var infixTokenType: TJInfixTokenType {
         switch self {
@@ -53,8 +49,8 @@ enum TJRegexToken: Equatable, TJInfixToken, TJPostfixToken {
 
 func ==(lhs: TJRegexToken, rhs: TJRegexToken) -> Bool {
     switch (lhs, rhs) {
-        case let (.CG(lhsCrs, lhsI), .CG(rhsCrs, rhsI))
-            where lhsCrs == rhsCrs && lhsI == rhsI:
+        case let (.CG(lhsCrs), .CG(rhsCrs))
+            where lhsCrs == rhsCrs:
                 return true
         case let (.R(lhsStart, lhsEnd), .R(rhsStart, rhsEnd))
             where lhsStart == rhsStart && lhsEnd == rhsEnd:
