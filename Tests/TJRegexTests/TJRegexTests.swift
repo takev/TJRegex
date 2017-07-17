@@ -88,6 +88,12 @@ class TJRegexTests: XCTestCase {
                 as [TJRegexToken]
         )
 
+        XCTAssertEqual(
+            try! TJRegexTokenize("a[bd]c"),
+            [.SG(0), .C("a"), .J, .SG(-1), .C("b"), .O, .C("d"), .EG, .J, .C("c"), .EG]
+                as [TJRegexToken]
+        )
+
     }
 
     static var allTests: [(String, (TJRegexTests) -> () -> Void)] = [

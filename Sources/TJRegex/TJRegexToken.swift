@@ -16,13 +16,41 @@
  * - Or = Or
  * - J  = Join / Concatenation
  */
-enum TJRegexToken: Equatable, TJInfixToken, TJPostfixToken {
-    case CG(TJCharacterRange)
+enum TJRegexToken: Equatable, TJInfixToken, TJPostfixToken, CustomStringConvertible {
+    case CG(TJRange<Character>)
     case R(Int, Int?)
     case SG(Int)
     case EG
     case O
     case J
+
+    var description: String {
+        switch self {
+            case let .CG(v):                            return "[\(v)]"
+            case let .R(v, w) where v == 0 && w == nil: return "*"
+            case let .R(v, w) where v == 1 && w == nil: return "+"
+            case let .R(v, w) where v == 0 && w == 1:   return "?"
+            case let .R(v, w) where w == nil:           return "{\(v)}"
+            case let .R(v, w):                          return "{\(v), \(w!)}"
+            case let .SG(v)   where v < 0:              return "("
+            case let .SG(v):                            return "(\(v)"
+            case     .EG:                               return ")"
+            case     .O:                                return "|"
+            case     .J:                                return "."
+        }
+    }
+
+    static func C() -> TJRegexToken {
+        return .CG(TJRange())
+    }
+
+    static func C(_ character: Character) -> TJRegexToken {
+        return .CG(TJRange(character))
+    }
+
+    static func C(_ characterRange: ClosedRange<Character>) -> TJRegexToken {
+        return .CG(TJRange(characterRange))
+    }
 
     var infixTokenType: TJInfixTokenType {
         switch self {

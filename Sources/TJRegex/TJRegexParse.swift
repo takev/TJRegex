@@ -10,5 +10,5 @@ import Foundation
 func TJRegexParse(_ pattern: String) throws {
     let infixTokens = try TJRegexTokenize(pattern)
     let postfixTokens = try TJInfixToPostfix(infixTokens)
-    let ast = try TJPostfixToAST(postfixTokens)
+    let _ = try TJPostfixToAST(postfixTokens)
 }
