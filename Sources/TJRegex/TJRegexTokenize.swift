@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import TJBase
+
 func TJRegexParseRepeat(_ pattern: String, index: inout String.Index) throws -> TJRegexToken {
     var optionalStartValue: Int? = nil
     var value = 0
