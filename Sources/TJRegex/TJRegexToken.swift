@@ -59,8 +59,24 @@ enum TJRegexToken: Equatable, TJInfixToken, TJPostfixToken, CustomStringConverti
         return .CG(TJRange(character))
     }
 
+    static func C(_ characterRange: Range<Character>) -> TJRegexToken {
+        return .CG(TJRange(characterRange))
+    }
+
     static func C(_ characterRange: ClosedRange<Character>) -> TJRegexToken {
         return .CG(TJRange(characterRange))
+    }
+
+    static func C(_ characterRange: PartialRangeUpTo<Character>) -> TJRegexToken {
+        return .CG(TJRange(characterRange))
+    }
+
+    static func C(leftOpen characterRange: PartialRangeFrom<Character>) -> TJRegexToken {
+        return .CG(TJRange(leftOpen: characterRange))
+    }
+
+    static func C(leftOpen characterRange: Range<Character>) -> TJRegexToken {
+        return .CG(TJRange(leftOpen: characterRange))
     }
 
     var infixTokenType: TJInfixTokenType {
