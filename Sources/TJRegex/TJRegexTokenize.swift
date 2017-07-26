@@ -89,7 +89,7 @@ func TJRegexParseCharacterGroup(_ pattern: String, index: inout String.Index) th
                     let characterHalfRange = characterRanges.removeLast()
 
                     characterRanges.append(characterHalfRange.lowerBound ... nextCharacter)
-                    nextIndex = pattern.index(index, offsetBy:1)
+                    nextIndex = pattern.index(index, offsetBy:2)
                 }
 
             default:

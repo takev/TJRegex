@@ -32,8 +32,27 @@ class TJRegexTokenizeTests: XCTestCase {
 
         XCTAssertEqual(
             try! TJRegexTokenize("[^ab]"),
-            [.SG(0), .SG(-1), .C("a"), .O, .C("b"), .EG, .EG]
-                as [TJRegexToken]
+            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen: "a" ..< "b"), .O, .C(leftOpen: "b"...), .EG, .EG]
+        )
+
+        XCTAssertEqual(
+            try! TJRegexTokenize("[a-z]"),
+            [.SG(0), .C("a" ... "z"), .EG]
+        )
+
+        XCTAssertEqual(
+            try! TJRegexTokenize("[^a-z]"),
+            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen: "z"...), .EG, .EG]
+        )
+
+        XCTAssertEqual(
+            try! TJRegexTokenize("[a-yb-z]"),
+            [.SG(0), .SG(-1), .C("a" ..< "b"), .O, .C("b" ... "z"), .EG, .EG]
+        )
+
+        XCTAssertEqual(
+            try! TJRegexTokenize("[^a-yb-z]"),
+            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen:"z"...), .EG, .EG]
         )
     }
 
