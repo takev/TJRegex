@@ -16,7 +16,7 @@
 
 import TJBase
 
-func TJRegexParseRepeat(_ pattern: String, index: inout String.Index) throws -> TJRegexToken {
+func TJRegexParseRepeat(_ pattern: String, index: inout String.Index) throws -> RegexToken {
     var optionalStartValue: Int? = nil
     var value = 0
 
@@ -101,32 +101,8 @@ func TJRegexParseCharacterGroup(_ pattern: String, index: inout String.Index) th
     throw TJRegexParseError.UnfinishedCharacterGroup
 }
 
-/// Example
-/// "x[a-cM-Z]x"
-/// "x([a-c]|[M-Z])x"
-func TJTokenizeCharacterGroup(_ characterRanges: TJRangeSet<Character>) -> [TJRegexToken] {
-    var tokens: [TJRegexToken] = []
-
-    if characterRanges.count > 1 {
-        tokens.append(.SG(-1))
-    }
-
-    for characterRange in characterRanges {
-        tokens.append(.CG(characterRange))
-        tokens.append(.O)
-    }
-    _ = tokens.popLast()
-
-    if characterRanges.count > 1 {
-        tokens.append(.EG)
-    }
-
-    return tokens
-}
-
-
-func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
-    var tokens: [TJRegexToken] = []
+func TJRegexTokenize(_ pattern: String) throws -> [RegexToken] {
+    var tokens: [RegexToken] = []
     var groupNumber = 0
 
     // At maximum every charracter in the pattern will be joined together.
@@ -148,13 +124,13 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
                 break
             default:
                 switch (tokens.last!) {
-                case .CG, .EG, .R: tokens.append(.J)
+                case .CRA, .EG, .R: tokens.append(.J)
                 default: break
                 }
         }
 
         switch (c) {
-            case ".":   tokens.append(.C())
+            case ".":   tokens.append(.InvertedCharacterGroup())
             case "^":   throw TJRegexParseError.UnsupportedAchor
             case "$":   throw TJRegexParseError.UnsupportedAchor
             case "(":   tokens.append(.SG(groupNumber)); groupNumber += 1
@@ -169,10 +145,10 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
                 if nextIndex < pattern.endIndex && pattern[nextIndex] == "^" {
                     nextIndex = pattern.index(nextIndex, offsetBy:1)
                     let characterGroups = try TJRegexParseCharacterGroup(pattern, index:&nextIndex)
-                    tokens += TJTokenizeCharacterGroup(TJRangeSet(characterGroups, inverted: true))
+                    tokens.append(.InvertedCharacterGroup(characterGroups))
                 } else {
                     let characterGroups = try TJRegexParseCharacterGroup(pattern, index:&nextIndex)
-                    tokens += TJTokenizeCharacterGroup(TJRangeSet(characterGroups))
+                    tokens.append(.CharacterGroup(characterGroups))
                 }
 
             case "\\":
@@ -183,19 +159,19 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
                 let nextCharacter = pattern[nextIndex]
                 switch (nextCharacter) {
                     case "w":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"]))
+                        tokens.append(.CharacterGroup(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"]))
                     case "W":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"], inverted: true))
+                        tokens.append(.InvertedCharacterGroup(["_"], ["a" ... "z", "A" ... "Z", "0" ... "9"]))
                     case "s":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet([" ", "\t", "\r", "\n", "\u{c}"]))
+                        tokens.append(.CharacterGroup([" ", "\t", "\r", "\n", "\u{c}"], []))
                     case "S":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet([" ", "\t", "\r", "\n", "\u{c}"], inverted: true))
+                        tokens.append(.InvertedCharacterGroup([" ", "\t", "\r", "\n", "\u{c}"], []))
                     case "d":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet(["0" ... "9"]))
+                        tokens.append(.CharacterGroup([], ["0" ... "9"]))
                     case "D":
-                        tokens += TJTokenizeCharacterGroup(TJRangeSet(["0" ... "9"], inverted: true))
+                        tokens.append(.InvertedCharacterGroup([], ["0" ... "9"]))
                     case ".", "^", "$", "(", ")", "|", "?", "*", "+", "{", "}", "[", "]", "\\":
-                        tokens.append(.C(nextCharacter))
+                        tokens.append(.CharacterGroup([nextCharacter]))
 
                     default:
                         throw TJRegexParseError.BadCharacterInEscape(nextIndex, nextCharacter)
@@ -205,7 +181,7 @@ func TJRegexTokenize(_ pattern: String) throws -> [TJRegexToken] {
                 nextIndex = pattern.index(nextIndex, offsetBy:1)
 
             default:
-                tokens.append(.C(c))
+                tokens.append(.CharacterGroup(c))
         }
 
         index = nextIndex

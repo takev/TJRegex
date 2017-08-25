@@ -14,9 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-func TJRegexASTToNFA(_ ast: TJAST<TJRegexToken>) -> TJRegexNFA {
+func TJRegexASTToNFA(_ ast: TJAST<RegexToken>) -> TJRegexNFA {
     switch (ast.token) {
-        case .CG:
+        case .CRA:
+            preconditionFailure("CharacterRangeArray should not be part of the AST.")
+
+        case .CR:
             precondition(ast.children.count == 0, "Expect a character operator to have no operands.")
 
             let nfa = TJRegexNFA()

@@ -13,13 +13,33 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import XCTest
+@testable import TJRegex
 
-indirect enum TJRegexAST {
-    case A(Character)
-    case C(Character)
-    case CG([Character], [ClosedRange<Character>], inverse: Bool)
-    case R(Int, Int?, TJRegexAST)
-    case G(Int, TJRegexAST)
-    case O([TJRegexAST])
-    case J([TJRegexAST])
+class TJPostfixToASTTests: XCTestCase {
+
+    /*func testTJPostfixToAST() {
+        XCTAssertEqual(
+            try! TJPostfixToAST(
+                [.C("a"), .C("b"), .J, .C("c"), .J, .SG(0)]
+                    as [RegexToken]
+            ),
+            TJAST(.SG(0), [
+                TJAST(.J, [
+                    TJAST(.J, [
+                        TJAST(.C("a")),
+                        TJAST(.C("b"))
+                    ]),
+                    TJAST(.C("c"))
+                ])
+            ])
+        )
+
+    }*/
+
+    static var allTests: [(String, (TJPostfixToASTTests) -> () -> Void)] = [
+//        ("testTJPostfixToAST", testTJPostfixToAST),
+    ]
 }
+
+

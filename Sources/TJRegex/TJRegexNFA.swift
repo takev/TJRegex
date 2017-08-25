@@ -16,7 +16,7 @@
 
 enum TJRegexNFATransition {
     case Epsilon(TJRegexNFAState)
-    case Input(TJRegexNFAState, TJRegexToken)
+    case Input(TJRegexNFAState, RegexToken)
 }
 
 class TJRegexNFAState {
@@ -28,7 +28,7 @@ class TJRegexNFAState {
         transitions.append(.Epsilon(nextState))
     }
 
-    func addInputTransition(_ nextState: TJRegexNFAState, token: TJRegexToken) {
+    func addInputTransition(_ nextState: TJRegexNFAState, token: RegexToken) {
         // assert(case .CG = token, "The token passed must be a .C token.")
         transitions.append(.Input(nextState, token))
     }

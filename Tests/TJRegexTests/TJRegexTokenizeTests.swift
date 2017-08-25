@@ -19,166 +19,166 @@ import XCTest
 class TJRegexTokenizeTests: XCTestCase {
     func testTJRegexTokenize_CG() {
         XCTAssertEqual(
-            try! TJRegexTokenize("a"),
-            [.SG(0), .C("a"), .EG]
+            try! TJRegexTokenize("a").description,
+            "(0:a)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[ab]"),
-            [.SG(0), .SG(-1), .C("a"), .O, .C("b"), .EG, .EG]
+            try! TJRegexTokenize("[ab]").description,
+            "(0:[ab])"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[^ab]"),
-            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen: "a" ..< "b"), .O, .C(leftOpen: "b"...), .EG, .EG]
+            try! TJRegexTokenize("[^ab]").description,
+            "(0:[∞-aa-bb-∞])"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[a-z]"),
-            [.SG(0), .C("a" ... "z"), .EG]
+            try! TJRegexTokenize("[a-z]").description,
+            "(0:[a/z])"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[^a-z]"),
-            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen: "z"...), .EG, .EG]
+            try! TJRegexTokenize("[^a-z]").description,
+            "(0:[∞-az-∞])"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[a-yb-z]"),
-            [.SG(0), .SG(-1), .C("a" ..< "b"), .O, .C("b" ... "z"), .EG, .EG]
+            try! TJRegexTokenize("[a-yb-z]").description,
+            "(0:[a/-bb/z])"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[^a-yb-z]"),
-            [.SG(0), .SG(-1), .C(..<"a"), .O, .C(leftOpen:"z"...), .EG, .EG]
+            try! TJRegexTokenize("[^a-yb-z]").description,
+            "(0:[∞-az-∞])"
         )
     }
 
     func testTJRegexTokenize_R() {
         XCTAssertEqual(
-            try! TJRegexTokenize("a+"),
-            [.SG(0), .C("a"), .R(1, nil), .EG]
+            try! TJRegexTokenize("a+").description,
+            "(0:a+)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a*"),
-            [.SG(0), .C("a"), .R(0, nil), .EG]
+            try! TJRegexTokenize("a*").description,
+            "(0:a*)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a?"),
-            [.SG(0), .C("a"), .R(0, 1), .EG]
+            try! TJRegexTokenize("a?").description,
+            "(0:a?)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a{3}"),
-            [.SG(0), .C("a"), .R(3, 3), .EG]
+            try! TJRegexTokenize("a{3}").description,
+            "(0:a{3})"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a{34}"),
-            [.SG(0), .C("a"), .R(34, 34), .EG]
+            try! TJRegexTokenize("a{34}").description,
+            "(0:a{34})"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a{1,34}"),
-            [.SG(0), .C("a"), .R(1, 34), .EG]
+            try! TJRegexTokenize("a{1,34}").description,
+            "(0:a{1,34})"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a{12,34}"),
-            [.SG(0), .C("a"), .R(12, 34), .EG]
+            try! TJRegexTokenize("a{12,34}").description,
+            "(0:a{12,34})"
         )
     }
 
     func testTJRegexTokenize_SG() {
         XCTAssertEqual(
-            try! TJRegexTokenize("(a)"),
-            [.SG(0), .SG(1), .C("a"), .EG, .EG]
+            try! TJRegexTokenize("(a)").description,
+            "(0:(1:a))"
         )
     }
 
     func testTJRegexTokenize_O() {
         XCTAssertEqual(
-            try! TJRegexTokenize("a|b"),
-            [.SG(0), .C("a"), .O, .C("b"), .EG]
+            try! TJRegexTokenize("a|b").description,
+            "(0:a|b)"
         )
     }
 
     func testTJRegexTokenize_J() {
         XCTAssertEqual(
-            try! TJRegexTokenize("ab"),
-            [.SG(0), .C("a"), .J, .C("b"), .EG]
+            try! TJRegexTokenize("ab").description,
+            "(0:a.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a(b)"),
-            [.SG(0), .C("a"), .J, .SG(1), .C("b"), .EG, .EG]
+            try! TJRegexTokenize("a(b)").description,
+            "(0:a.(1:b))"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("(a)b"),
-            [.SG(0), .SG(1), .C("a"), .EG, .J, .C("b"), .EG]
+            try! TJRegexTokenize("(a)b").description,
+            "(0:(1:a).b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("ab*"),
-            [.SG(0), .C("a"), .J, .C("b"), .R(0, nil), .EG]
+            try! TJRegexTokenize("ab*").description,
+            "(0:a.b*)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a*b"),
-            [.SG(0), .C("a"), .R(0, nil), .J, .C("b"), .EG]
+            try! TJRegexTokenize("a*b").description,
+            "(0:a*.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("ab+"),
-            [.SG(0), .C("a"), .J, .C("b"), .R(1, nil), .EG]
+            try! TJRegexTokenize("ab+").description,
+             "(0:a.b+)"
+       )
+
+        XCTAssertEqual(
+            try! TJRegexTokenize("a+b").description,
+             "(0:a+.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a+b"),
-            [.SG(0), .C("a"), .R(1, nil), .J, .C("b"), .EG]
+            try! TJRegexTokenize("ab?").description,
+             "(0:a.b?)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("ab?"),
-            [.SG(0), .C("a"), .J, .C("b"), .R(0, 1), .EG]
+            try! TJRegexTokenize("a?b").description,
+             "(0:a?.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a?b"),
-            [.SG(0), .C("a"), .R(0, 1), .J, .C("b"), .EG]
+            try! TJRegexTokenize("ab{2}").description,
+             "(0:a.b{2})"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("ab{2}"),
-            [.SG(0), .C("a"), .J, .C("b"), .R(2, 2), .EG]
+            try! TJRegexTokenize("a{2}b").description,
+             "(0:a{2}.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a{2}b"),
-            [.SG(0), .C("a"), .R(2, 2), .J, .C("b"), .EG]
+            try! TJRegexTokenize("a[b]").description,
+             "(0:a.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a[b]"),
-            [.SG(0), .C("a"), .J, .C("b"), .EG]
+            try! TJRegexTokenize("[a]b").description,
+             "(0:a.b)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("[a]b"),
-            [.SG(0), .C("a"), .J, .C("b"), .EG]
+            try! TJRegexTokenize("a|bc").description,
+             "(0:a|b.c)"
         )
 
         XCTAssertEqual(
-            try! TJRegexTokenize("a|bc"),
-            [.SG(0), .C("a"), .O, .C("b"), .J, .C("c"), .EG]
-        )
-
-        XCTAssertEqual(
-            try! TJRegexTokenize("ab|c"),
-            [.SG(0), .C("a"), .J, .C("b"), .O, .C("c"), .EG]
+            try! TJRegexTokenize("ab|c").description,
+             "(0:a.b|c)"
         )
    }
 

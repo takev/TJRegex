@@ -22,28 +22,28 @@ class TJInfixToPostfixTests: XCTestCase {
         XCTAssertEqual(
             try! TJInfixToPostfix(
                 [.SG(0), .C("a"), .J, .C("b"), .J, .C("c"), .EG]
-                    as [TJRegexToken]
+                    as [RegexToken]
             ),
             [.C("a"), .C("b"), .J, .C("c"), .J, .SG(0)]
-                as [TJRegexToken]
+                as [RegexToken]
         )
 
         XCTAssertEqual(
             try! TJInfixToPostfix(
                 [.SG(0), .C("a"), .J, .C("b"), .R(1, nil), .J, .C("c"), .EG]
-                    as [TJRegexToken]
+                    as [RegexToken]
             ),
             [.C("a"), .C("b"), .R(1, nil), .J, .C("c"), .J, .SG(0)]
-                as [TJRegexToken]
+                as [RegexToken]
         )
 
         XCTAssertEqual(
             try! TJInfixToPostfix(
                 [.SG(0), .SG(1), .C("a"), .J, .C("b"), .EG, .R(1, nil), .J, .C("c"), .EG]
-                    as [TJRegexToken]
+                    as [RegexToken]
             ),
             [.C("a"), .C("b"), .J, .SG(1), .R(1, nil), .C("c"), .J, .SG(0)]
-                as [TJRegexToken]
+                as [RegexToken]
         )
 
     }

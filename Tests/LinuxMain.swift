@@ -4,4 +4,5 @@ import XCTest
 XCTMain([
     testCase(TJRegexTokenizeTests.allTests),
     testCase(TJInfixToPostfixTests.allTests),
+    testCase(TJPostfixToASTTests.allTests),
 ])
