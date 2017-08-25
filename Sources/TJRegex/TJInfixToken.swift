@@ -1,4 +1,4 @@
-// TJRegex - A Swift package for working with large integers.
+// TJRegex - Regular Expression library based on the Swift String struct.
 // Copyright (C) 2017  Tjienta Vara
 //
 // This program is free software: you can redistribute it and/or modify
